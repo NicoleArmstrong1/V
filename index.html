@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SundayLive — Lightbearer V Ministry</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold-light:#F0D080;--deep:#0D0D0D;--deep2:#181818;
+  --deep3:#222222;--deep4:#2c2c2c;--cream:#F7F0E6;--muted:#888880;
+  --white:#fff;--red:#e84444;--green:#3ec46d;--radius:16px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--deep);color:var(--cream);overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0.9rem 4%;background:rgba(13,13,13,0.95);backdrop-filter:blur(18px);border-bottom:0.5px solid rgba(201,168,76,0.15);transition:padding 0.3s}
+nav.scrolled{padding:0.65rem 4%}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:900;color:var(--gold);line-height:1.1;flex-shrink:0}
+.nav-logo small{display:block;font-family:'DM Sans',sans-serif;font-size:0.62rem;font-weight:300;color:var(--muted);letter-spacing:0.12em}
+
+/* ── TRANSLATION BAR ── */
+.lang-bar{background:rgba(13,13,13,0.94);border-bottom:0.5px solid rgba(201,168,76,0.1);padding:0.35rem 4%;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;position:fixed;top:60px;left:0;right:0;z-index:480;backdrop-filter:blur(12px)}
+.lang-bar-label{font-size:0.65rem;color:var(--muted);margin-right:0.2rem;white-space:nowrap}
+.lang-btn{background:transparent;border:0.5px solid rgba(201,168,76,0.18);border-radius:6px;padding:2px 8px;font-size:0.68rem;color:var(--cream);cursor:pointer;transition:background 0.18s,border-color 0.18s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.lang-btn:hover,.lang-btn.active-lang{background:rgba(201,168,76,0.18);border-color:var(--gold);color:var(--gold)}
+
+/* ── CHURCH CONTACT ── */
+.church-contact-bar{background:rgba(201,168,76,0.06);border:0.5px solid rgba(201,168,76,0.18);border-radius:12px;padding:0.65rem 1.3rem;display:inline-flex;align-items:center;gap:1.3rem;flex-wrap:wrap;margin-top:1.4rem;position:relative;z-index:1;animation:fadeUp 0.8s 0.55s ease both}
+.contact-item{display:flex;align-items:center;gap:7px;font-size:0.83rem;color:var(--cream)}
+.contact-icon{font-size:1rem}
+.contact-link{color:var(--gold);text-decoration:none;font-weight:500;transition:opacity 0.2s}
+.contact-link:hover{opacity:0.75}
+
+/* ── ENLARGED SECTION TITLES (Ministry & Chat) ── */
+.ministry-heading{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:900;color:var(--gold);letter-spacing:0.01em}
+.chat-head-title{font-size:1rem;color:var(--cream);font-weight:500}
+.chat-msg-name{font-size:0.8rem;color:var(--gold);margin-bottom:2px;font-weight:500}
+.chat-msg-text{font-size:0.88rem;color:var(--cream);line-height:1.5}
+.nav-links{display:flex;gap:1.6rem;list-style:none}
+.nav-links a{text-decoration:none;color:var(--cream);font-size:0.85rem;opacity:0.72;transition:opacity 0.2s,color 0.2s}
+.nav-links a:hover,.nav-links a.active{opacity:1;color:var(--gold)}
+.nav-right{display:flex;align-items:center;gap:0.7rem;flex-shrink:0}
+.nav-cta{background:var(--gold);color:var(--deep);border:none;padding:0.48rem 1.15rem;border-radius:40px;font-size:0.85rem;font-weight:500;cursor:pointer;text-decoration:none;transition:background 0.2s}
+.nav-cta:hover{background:var(--gold-light)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;flex-shrink:0}
+.hamburger span{width:22px;height:2px;background:var(--cream);border-radius:2px;transition:all 0.3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-menu{display:none;position:fixed;top:58px;left:0;right:0;z-index:490;background:rgba(13,13,13,0.98);backdrop-filter:blur(18px);padding:1.4rem 5%;flex-direction:column;gap:1rem;border-bottom:0.5px solid rgba(201,168,76,0.15)}
+.mobile-menu.open{display:flex}
+.mobile-menu a{color:var(--cream);text-decoration:none;font-size:1rem;opacity:0.85;padding:0.3rem 0;border-bottom:0.5px solid rgba(255,255,255,0.04)}
+.mobile-menu a:hover{color:var(--gold);opacity:1}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:var(--deep2);border:0.5px solid rgba(201,168,76,0.4);border-radius:12px;padding:0.85rem 1.3rem;font-size:0.86rem;color:var(--cream);transform:translateY(80px);opacity:0;transition:transform 0.3s ease,opacity 0.3s ease;max-width:290px;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-icon{color:var(--gold);margin-right:5px}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 5% 4rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 65% 55% at 50% 30%,rgba(201,168,76,0.12) 0%,transparent 70%),radial-gradient(ellipse 40% 35% at 80% 80%,rgba(201,168,76,0.05) 0%,transparent 60%)}
+.live-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:0.5px solid rgba(201,168,76,0.4);border-radius:40px;padding:0.38rem 1rem;font-size:0.78rem;font-weight:500;color:var(--gold);margin-bottom:1.4rem;position:relative;z-index:1;animation:fadeUp 0.7s ease both}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.6)}}
+h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,5rem);font-weight:900;line-height:1.09;color:var(--white);position:relative;z-index:1;animation:fadeUp 0.8s 0.1s ease both}
+h1 span{color:var(--gold)}
+.hero-lead{font-family:'Playfair Display',serif;font-size:clamp(0.95rem,1.8vw,1.2rem);color:var(--gold);font-style:italic;margin-top:0.7rem;position:relative;z-index:1;animation:fadeUp 0.8s 0.2s ease both}
+.hero-sub{max-width:560px;margin:1.1rem auto 0;font-size:0.97rem;font-weight:300;color:var(--muted);line-height:1.75;position:relative;z-index:1;animation:fadeUp 0.8s 0.3s ease both}
+.hero-actions{display:flex;gap:0.9rem;flex-wrap:wrap;justify-content:center;margin-top:2rem;position:relative;z-index:1;animation:fadeUp 0.8s 0.4s ease both}
+.btn-primary{background:var(--gold);color:var(--deep);border:none;padding:0.78rem 1.9rem;border-radius:40px;font-size:0.95rem;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block;transition:background 0.2s,transform 0.15s}
+.btn-primary:hover{background:var(--gold-light);transform:translateY(-2px)}
+.btn-outline{background:transparent;color:var(--cream);border:0.5px solid rgba(247,240,230,0.3);padding:0.78rem 1.9rem;border-radius:40px;font-size:0.95rem;cursor:pointer;text-decoration:none;display:inline-block;transition:border-color 0.2s,color 0.2s,transform 0.15s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* LEADER CARDS */
+.leaders{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:2.2rem;position:relative;z-index:1;animation:fadeUp 0.8s 0.5s ease both}
+.leader-card{background:var(--deep2);border:0.5px solid rgba(201,168,76,0.22);border-radius:14px;padding:1rem 1.4rem;display:flex;align-items:center;gap:11px}
+.leader-avatar{width:44px;height:44px;border-radius:50%;background:rgba(201,168,76,0.15);border:1.5px solid rgba(201,168,76,0.45);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.leader-name{font-size:0.9rem;font-weight:500;color:var(--white)}
+.leader-role{font-size:0.7rem;color:var(--gold);margin-top:2px}
+
+/* ── SECTION COMMON ── */
+section{padding:5rem 5%}
+.section-label{font-size:0.7rem;font-weight:500;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;margin-bottom:0.8rem}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3.2vw,2.6rem);font-weight:700;line-height:1.2;color:var(--white);max-width:580px}
+.section-body{font-size:0.92rem;color:var(--muted);line-height:1.8;max-width:540px;margin-top:0.75rem}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.55s ease,transform 0.55s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ══════════════════════════════════════
+   LIVE SECTION
+══════════════════════════════════════ */
+#live{background:var(--deep2);padding:4rem 4%}
+.live-layout{display:grid;grid-template-columns:1fr 300px;gap:1.1rem;margin-top:1.8rem}
+
+/* VIDEO STAGE */
+.video-stage{display:flex;flex-direction:column;gap:0.8rem}
+.video-wrap{background:#080808;border-radius:14px;aspect-ratio:16/9;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid rgba(201,168,76,0.1)}
+#local-video,#remote-video{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:none;border-radius:14px}
+.video-placeholder{display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0.3;pointer-events:none}
+.video-placeholder-icon{font-size:3rem}
+.video-placeholder-text{font-size:0.82rem;color:var(--muted)}
+.overlay-tags{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:10}
+.vtag{font-size:0.63rem;font-weight:500;padding:3px 9px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.vtag-live{background:var(--red);color:#fff}
+.vtag-viewers{background:rgba(0,0,0,0.7);color:var(--cream)}
+.vtag-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.4s infinite}
+.stream-name-tag{position:absolute;bottom:12px;left:12px;font-size:0.72rem;color:var(--cream);background:rgba(0,0,0,0.75);padding:3px 10px;border-radius:6px;z-index:10;display:none}
+.pip-video{position:absolute;bottom:12px;right:12px;width:22%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:1.5px solid rgba(201,168,76,0.4);display:none;z-index:11}
+.pip-video video{width:100%;height:100%;object-fit:cover}
+
+/* CONTROLS BAR */
+.controls-bar{display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;background:var(--deep3);border-radius:12px;padding:0.75rem 1rem}
+.ctrl-btn{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.5rem 1rem;font-size:0.82rem;color:var(--cream);cursor:pointer;transition:background 0.2s,border-color 0.2s;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.ctrl-btn:hover{background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.4)}
+.ctrl-btn.danger{background:rgba(232,68,68,0.12);border-color:rgba(232,68,68,0.3);color:#f87171}
+.ctrl-btn.danger:hover{background:rgba(232,68,68,0.2)}
+.ctrl-btn.active{background:rgba(201,168,76,0.18);border-color:rgba(201,168,76,0.5);color:var(--gold)}
+#go-live-btn{background:var(--red);color:#fff;border-color:transparent;font-weight:500}
+#go-live-btn:hover{background:#c93535}
+#go-live-btn.live-on{background:rgba(232,68,68,0.15);color:#f87171;border-color:rgba(232,68,68,0.4)}
+.ctrl-spacer{flex:1}
+.invite-link-box{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(201,168,76,0.25);border-radius:8px;padding:0.4rem 0.8rem;font-size:0.78rem;color:var(--muted)}
+.invite-link-box span{color:var(--gold);cursor:pointer;transition:opacity 0.2s}
+.invite-link-box span:hover{opacity:0.7}
+
+/* REACTIONS */
+.reactions-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--deep3);border-radius:12px;padding:0.55rem 0.9rem}
+.reaction-btn{background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:18px;padding:3px 10px;font-size:0.82rem;cursor:pointer;transition:transform 0.15s,background 0.15s;display:flex;align-items:center;gap:4px;color:var(--cream);font-family:'DM Sans',sans-serif}
+.reaction-btn:hover{background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.4);transform:scale(1.12)}
+.reaction-btn.popped{animation:pop 0.28s ease}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.45)}100%{transform:scale(1)}}
+.r-cnt{font-size:0.72rem;color:var(--muted)}
+.float-emoji{position:fixed;font-size:1.5rem;pointer-events:none;z-index:9998;animation:floatUp 1.5s ease forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-110px) scale(0.5)}}
+
+/* CHAT COLUMN */
+.chat-col{background:var(--deep3);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;min-height:340px}
+.chat-head{padding:0.65rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center}
+.chat-head-title{font-size:0.82rem;color:var(--muted)}
+.chat-online{font-size:0.72rem;color:var(--green);display:flex;align-items:center;gap:4px}
+.chat-online-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.chat-msgs{flex:1;overflow-y:auto;padding:0.7rem;display:flex;flex-direction:column;gap:7px;max-height:240px}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.25);border-radius:3px}
+.chat-msg-item{display:flex;gap:7px;align-items:flex-start;animation:msgIn 0.28s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.chat-av{width:26px;height:26px;border-radius:50%;background:rgba(201,168,76,0.18);color:var(--gold);font-size:0.6rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-msg-name{font-size:0.67rem;color:var(--gold);margin-bottom:2px}
+.chat-msg-text{font-size:0.77rem;color:var(--cream);line-height:1.45}
+.chat-input-row{padding:0.55rem;border-top:0.5px solid rgba(255,255,255,0.07);display:flex;gap:6px}
+.chat-input{flex:1;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 11px;font-size:0.78rem;color:var(--cream);outline:none;font-family:'DM Sans',sans-serif;transition:border-color 0.2s}
+.chat-input:focus{border-color:rgba(201,168,76,0.5)}
+.chat-input::placeholder{color:var(--muted)}
+.chat-send{background:var(--gold);color:var(--deep);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;transition:background 0.2s;flex-shrink:0}
+.chat-send:hover{background:var(--gold-light)}
+
+/* WAITROOM */
+.waitroom-panel{background:var(--deep3);border-radius:14px;padding:0.85rem;margin-top:0.8rem;display:none}
+.waitroom-panel.show{display:block}
+.waitroom-title{font-size:0.78rem;color:var(--muted);margin-bottom:0.6rem;display:flex;justify-content:space-between;align-items:center}
+.waitroom-list{display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto}
+.waitroom-item{display:flex;align-items:center;gap:8px;padding:5px 6px;background:rgba(255,255,255,0.03);border-radius:8px}
+.waitroom-name{flex:1;font-size:0.8rem;color:var(--cream)}
+.admit-btn{background:var(--green);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:0.72rem;cursor:pointer;transition:opacity 0.2s}
+.admit-btn:hover{opacity:0.8}
+.deny-btn{background:rgba(232,68,68,0.2);color:#f87171;border:none;border-radius:6px;padding:3px 10px;font-size:0.72rem;cursor:pointer;transition:opacity 0.2s}
+.deny-btn:hover{opacity:0.8}
+.waitroom-empty{font-size:0.78rem;color:var(--muted);text-align:center;padding:0.5rem}
+
+/* ── FEATURES ── */
+#features{background:var(--deep)}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.1rem;margin-top:2.2rem}
+.feat-card{background:var(--deep2);border:0.5px solid rgba(201,168,76,0.1);border-radius:var(--radius);padding:1.5rem;transition:border-color 0.25s,transform 0.2s;cursor:default}
+.feat-card:hover{border-color:rgba(201,168,76,0.45);transform:translateY(-4px)}
+.feat-icon{width:40px;height:40px;border-radius:10px;background:rgba(201,168,76,0.1);display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:0.85rem}
+.feat-title{font-size:0.9rem;font-weight:500;color:var(--white);margin-bottom:0.4rem}
+.feat-text{font-size:0.81rem;color:var(--muted);line-height:1.7}
+
+/* ── SCHEDULE ── */
+#schedule{background:var(--deep2)}
+.tabs{display:flex;gap:0;margin-top:1.8rem;border-bottom:0.5px solid rgba(201,168,76,0.15)}
+.tab-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.87rem;padding:0.65rem 1.3rem;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;margin-bottom:-0.5px}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-content{display:none;margin-top:1.3rem}
+.tab-content.active{display:block}
+.sched-list{display:flex;flex-direction:column;gap:0.7rem;max-width:680px}
+.sched-item{background:var(--deep);border:0.5px solid rgba(201,168,76,0.1);border-radius:12px;padding:0.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:0.8rem;flex-wrap:wrap;transition:border-color 0.2s}
+.sched-item:hover{border-color:rgba(201,168,76,0.35)}
+.sched-time{font-size:0.76rem;color:var(--gold);font-weight:500;min-width:65px}
+.sched-info{flex:1;min-width:120px}
+.sched-title-text{font-size:0.88rem;font-weight:500;color:var(--white)}
+.sched-host-text{font-size:0.74rem;color:var(--muted);margin-top:2px}
+.sched-badge{font-size:0.68rem;padding:3px 9px;border-radius:18px;font-weight:500;white-space:nowrap}
+.badge-live{background:rgba(232,68,68,0.15);color:#f87171;border:0.5px solid rgba(232,68,68,0.3)}
+.badge-soon{background:rgba(201,168,76,0.1);color:var(--gold);border:0.5px solid rgba(201,168,76,0.3)}
+.badge-done{background:rgba(136,136,128,0.08);color:var(--muted);border:0.5px solid rgba(136,136,128,0.2)}
+.join-sched-btn{background:var(--gold);color:var(--deep);border:none;border-radius:18px;padding:5px 13px;font-size:0.76rem;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}
+.join-sched-btn:hover{background:var(--gold-light)}
+.join-sched-btn.off{background:rgba(201,168,76,0.1);color:var(--muted);cursor:default}
+
+/* ── HOW ── */
+#how{background:var(--deep)}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1.1rem;margin-top:2.2rem}
+.step-card{background:var(--deep2);border:0.5px solid rgba(201,168,76,0.08);border-radius:var(--radius);padding:1.5rem;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s}
+.step-card:hover{border-color:rgba(201,168,76,0.38);transform:translateY(-3px)}
+.step-nbg{position:absolute;top:-8px;right:10px;font-family:'Playfair Display',serif;font-size:5rem;font-weight:900;color:rgba(201,168,76,0.04);line-height:1;pointer-events:none}
+.step-n{width:34px;height:34px;border-radius:50%;border:1px solid rgba(201,168,76,0.38);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:500;color:var(--gold);margin-bottom:0.9rem}
+.step-title{font-size:0.9rem;font-weight:500;color:var(--white);margin-bottom:0.38rem}
+.step-text{font-size:0.8rem;color:var(--muted);line-height:1.7}
+
+/* ── PRAYER ── */
+#prayer{background:var(--deep2)}
+.prayer-form-wrap{max-width:540px;margin-top:1.8rem;background:var(--deep);border:0.5px solid rgba(201,168,76,0.12);border-radius:var(--radius);padding:1.8rem}
+.form-row{margin-bottom:0.9rem}
+.form-label{font-size:0.76rem;color:var(--muted);margin-bottom:0.38rem;display:block}
+.f-input,.f-textarea,.f-select{width:100%;background:var(--deep2);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.65rem 0.9rem;font-size:0.85rem;color:var(--cream);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
+.f-input:focus,.f-textarea:focus,.f-select:focus{border-color:rgba(201,168,76,0.5)}
+.f-input::placeholder,.f-textarea::placeholder{color:var(--muted)}
+.f-textarea{resize:vertical;min-height:95px}
+.f-select option{background:var(--deep2)}
+.prayer-submit-btn{background:var(--gold);color:var(--deep);border:none;border-radius:40px;padding:0.72rem 2rem;font-size:0.9rem;font-weight:500;cursor:pointer;width:100%;margin-top:0.4rem;transition:background 0.2s}
+.prayer-submit-btn:hover{background:var(--gold-light)}
+.prayer-ok{display:none;text-align:center;padding:1.5rem;color:var(--green);font-size:0.95rem;font-weight:500}
+.prayer-ok span{font-size:2rem;display:block;margin-bottom:0.5rem}
+
+/* ── EMAIL ── */
+#email-section{background:var(--deep)}
+.email-compose{max-width:600px;margin-top:1.8rem;background:var(--deep2);border:0.5px solid rgba(201,168,76,0.12);border-radius:var(--radius);overflow:hidden}
+.email-toolbar{background:var(--deep3);padding:0.65rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+.email-toolbar-title{font-size:0.82rem;color:var(--muted)}
+.email-field{display:flex;align-items:center;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+.email-field-label{font-size:0.75rem;color:var(--muted);padding:0.6rem 1rem;min-width:60px;border-right:0.5px solid rgba(255,255,255,0.06)}
+.email-field input{flex:1;background:transparent;border:none;outline:none;padding:0.6rem 1rem;font-size:0.85rem;color:var(--cream);font-family:'DM Sans',sans-serif}
+.email-field input::placeholder{color:var(--muted)}
+.email-body-area{width:100%;background:transparent;border:none;outline:none;padding:1rem;font-size:0.87rem;color:var(--cream);font-family:'DM Sans',sans-serif;resize:vertical;min-height:160px;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+.email-body-area::placeholder{color:var(--muted)}
+.email-actions{padding:0.75rem 1rem;display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap}
+.send-email-btn{background:var(--gold);color:var(--deep);border:none;border-radius:40px;padding:0.55rem 1.5rem;font-size:0.88rem;font-weight:500;cursor:pointer;transition:background 0.2s}
+.send-email-btn:hover{background:var(--gold-light)}
+.email-note{font-size:0.73rem;color:var(--muted)}
+.email-templates{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:1rem;max-width:600px}
+.template-btn{background:var(--deep2);border:0.5px solid rgba(201,168,76,0.2);border-radius:8px;padding:0.4rem 0.85rem;font-size:0.77rem;color:var(--cream);cursor:pointer;transition:border-color 0.2s,background 0.2s}
+.template-btn:hover{border-color:rgba(201,168,76,0.5);background:rgba(201,168,76,0.06)}
+
+/* ── TESTIMONIALS ── */
+#testimonials{background:var(--deep2)}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.1rem;margin-top:2.2rem}
+.testi-card{background:var(--deep);border:0.5px solid rgba(201,168,76,0.08);border-radius:var(--radius);padding:1.5rem;transition:border-color 0.25s,transform 0.2s}
+.testi-card:hover{border-color:rgba(201,168,76,0.4);transform:translateY(-3px)}
+.testi-stars{color:var(--gold);font-size:0.82rem;margin-bottom:0.75rem;letter-spacing:2px}
+.testi-quote{font-size:0.88rem;color:var(--cream);line-height:1.8;font-style:italic;margin-bottom:1.1rem}
+.testi-author{display:flex;align-items:center;gap:9px}
+.testi-av{width:34px;height:34px;border-radius:50%;background:rgba(201,168,76,0.15);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:500;color:var(--gold)}
+.testi-name{font-size:0.8rem;font-weight:500;color:var(--white)}
+.testi-role{font-size:0.7rem;color:var(--muted)}
+
+/* ── CTA ── */
+#cta{text-align:center;padding:6.5rem 5%;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(201,168,76,0.09) 0%,transparent 70%)}
+#cta .section-title{max-width:100%;margin:0 auto 0.9rem}
+#cta .section-body{margin:0 auto 2.2rem;text-align:center}
+.invite-box{display:flex;max-width:420px;margin:0 auto;background:var(--deep2);border:0.5px solid rgba(201,168,76,0.25);border-radius:40px;padding:4px;overflow:hidden}
+.invite-box input{flex:1;background:transparent;border:none;outline:none;padding:0.65rem 1rem;font-size:0.88rem;color:var(--cream);font-family:'DM Sans',sans-serif}
+.invite-box input::placeholder{color:var(--muted)}
+.invite-box button{background:var(--gold);color:var(--deep);border:none;padding:0.65rem 1.4rem;border-radius:36px;font-size:0.88rem;font-weight:500;cursor:pointer;transition:background 0.2s}
+.invite-box button:hover{background:var(--gold-light)}
+.cta-ok{display:none;color:var(--green);font-size:0.88rem;margin-top:0.9rem;font-weight:500}
+
+/* ── FOOTER ── */
+footer{border-top:0.5px solid rgba(201,168,76,0.1);padding:2.2rem 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold)}
+.footer-links{display:flex;gap:1.4rem;list-style:none;flex-wrap:wrap}
+.footer-links a{font-size:0.77rem;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--gold)}
+.footer-copy{font-size:0.72rem;color:var(--muted)}
+
+/* ── PIN GATE ── */
+.pin-digit{width:42px;height:52px;background:var(--deep2);border:1.5px solid rgba(201,168,76,0.3);border-radius:8px;text-align:center;font-size:1.4rem;color:var(--gold);font-family:'Playfair Display',serif;outline:none;transition:border-color 0.2s}
+.pin-digit:focus{border-color:var(--gold);background:rgba(201,168,76,0.07)}
+.pin-digit.filled{border-color:rgba(201,168,76,0.6)}
+.pin-digit.error{border-color:#f87171;animation:shake 0.4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+/* ── LIVE TABS ── */
+.live-tabs{display:flex;gap:0;margin-top:1.5rem;border-bottom:0.5px solid rgba(201,168,76,0.15);flex-wrap:wrap}
+.live-tab-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:0.65rem 1.2rem;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;margin-bottom:-0.5px;white-space:nowrap}
+.live-tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.live-tab-panel{display:none;padding-top:1.4rem}
+.live-tab-panel.active{display:block}
+
+/* ── MUSIC PLAYER ── */
+.music-player{background:var(--deep3);border:0.5px solid rgba(201,168,76,0.18);border-radius:14px;padding:1.4rem;display:flex;flex-direction:column;gap:1rem}
+.music-now-playing{display:flex;align-items:center;gap:1rem}
+.music-disc{width:54px;height:54px;border-radius:50%;background:rgba(201,168,76,0.12);border:1.5px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;transition:transform 0.1s}
+.music-disc.spinning{animation:spin 3s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.music-track-name{font-size:0.95rem;font-weight:500;color:var(--white)}
+.music-track-artist{font-size:0.76rem;color:var(--muted);margin-top:3px}
+.music-progress-row{display:flex;align-items:center;gap:10px}
+.music-time{font-size:0.72rem;color:var(--muted);min-width:32px}
+.music-progress-bar{flex:1;height:4px;background:rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;position:relative}
+.music-progress-fill{height:100%;background:var(--gold);border-radius:4px;width:0%;transition:width 0.5s linear}
+.music-controls{display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap}
+.music-ctrl-btn{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.45rem 0.85rem;font-size:0.9rem;cursor:pointer;color:var(--cream);transition:background 0.2s;font-family:'DM Sans',sans-serif}
+.music-ctrl-btn:hover{background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.4)}
+.music-ctrl-btn.active-music{color:var(--gold);border-color:rgba(201,168,76,0.5)}
+.music-play-btn{background:var(--gold);color:var(--deep);border-color:transparent;padding:0.45rem 1.2rem;font-size:1rem;font-weight:500}
+.music-play-btn:hover{background:var(--gold-light)}
+.playlist{display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto}
+.playlist::-webkit-scrollbar{width:3px}
+.playlist::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.25);border-radius:3px}
+.playlist-item{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--deep3);border-radius:8px;cursor:pointer;border:0.5px solid transparent;transition:border-color 0.2s,background 0.2s}
+.playlist-item:hover{background:rgba(201,168,76,0.08);border-color:rgba(201,168,76,0.2)}
+.playlist-item.playing{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.35)}
+.pl-num{font-size:0.72rem;color:var(--muted);min-width:18px;text-align:right}
+.pl-icon{font-size:0.85rem}
+.pl-name{flex:1;font-size:0.82rem;color:var(--cream)}
+.pl-dur{font-size:0.72rem;color:var(--muted)}
+
+/* ── SCREEN MESSAGE ── */
+.screen-msg-composer{background:var(--deep3);border:0.5px solid rgba(201,168,76,0.15);border-radius:14px;padding:1.4rem;display:flex;flex-direction:column;gap:0.9rem}
+.msg-size-btn{background:var(--deep2);border:0.5px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 12px;font-size:0.75rem;color:var(--cream);cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.msg-size-btn.active{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold)}
+.msg-color-btn{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform 0.15s,border-color 0.15s}
+.msg-color-btn:hover{transform:scale(1.15)}
+.msg-color-btn.active{border-color:var(--white)}
+
+/* ── ADVERT ── */
+.advert-composer{background:var(--deep3);border:0.5px solid rgba(201,168,76,0.15);border-radius:14px;padding:1.4rem;display:flex;flex-direction:column;gap:0.9rem}
+
+/* ── RESPONSIVE NEW ── */
+@media(max-width:540px){
+  .live-tabs{gap:0}
+  .live-tab-btn{font-size:0.75rem;padding:0.55rem 0.8rem}
+  .pin-digit{width:36px;height:46px;font-size:1.2rem}
+}
+
+@media(max-width:820px){
+  .live-layout{grid-template-columns:1fr}
+  .chat-col{min-height:260px}
+  .chat-msgs{max-height:180px}
+}
+@media(max-width:680px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  footer{flex-direction:column;text-align:center}
+  .controls-bar{gap:0.4rem}
+  .ctrl-btn{padding:0.45rem 0.7rem;font-size:0.78rem}
+}
+@media(max-width:440px){
+  .hero-actions{flex-direction:column;align-items:center}
+  .invite-box{flex-direction:column;border-radius:12px;padding:6px}
+  .invite-box input{padding:0.55rem 0.8rem}
+  .invite-box button{border-radius:8px}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"><span class="toast-icon">✦</span><span id="toast-msg"></span></div>
+
+<!-- ── NAV ── -->
+<nav id="navbar">
+  <div class="nav-logo">Lightbearer V Ministry<small>Vision · Destiny · Transformation · Inspire · Connect</small></div>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#live">Go Live</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#prayer">Prayer</a></li>
+    <li><a href="#email-section">Email</a></li>
+    <li><a href="#testimonials">Community</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#live" class="nav-cta">Start broadcast</a>
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#live" onclick="closeMenu()">Go Live</a>
+  <a href="#features" onclick="closeMenu()">Features</a>
+  <a href="#schedule" onclick="closeMenu()">Schedule</a>
+  <a href="#prayer" onclick="closeMenu()">Prayer</a>
+  <a href="#email-section" onclick="closeMenu()">Email</a>
+  <a href="#testimonials" onclick="closeMenu()">Community</a>
+  <a href="#cta" class="btn-primary" style="text-align:center;margin-top:0.4rem" onclick="closeMenu()">Join free</a>
+</div>
+
+<!-- ── LANGUAGE TRANSLATION BAR ── -->
+<div class="lang-bar" id="lang-bar">
+  <span class="lang-bar-label">🌐 Language:</span>
+  <button class="lang-btn active-lang" onclick="setLang('en',this)">🇬🇧 English</button>
+  <button class="lang-btn" onclick="setLang('sw',this)">🇰🇪 Swahili</button>
+  <button class="lang-btn" onclick="setLang('fr',this)">🇫🇷 French</button>
+  <button class="lang-btn" onclick="setLang('pt',this)">🇧🇷 Portuguese</button>
+  <button class="lang-btn" onclick="setLang('es',this)">🇪🇸 Spanish</button>
+  <button class="lang-btn" onclick="setLang('yo',this)">🇳🇬 Yoruba</button>
+  <button class="lang-btn" onclick="setLang('zu',this)">🇿🇦 Zulu</button>
+  <button class="lang-btn" onclick="setLang('am',this)">🇪🇹 Amharic</button>
+  <button class="lang-btn" onclick="setLang('ar',this)">🇸🇦 Arabic</button>
+  <button class="lang-btn" onclick="setLang('zh',this)">🇨🇳 Chinese</button>
+</div>
+
+<!-- ── HERO ── -->
+<section id="hero" style="padding-top:9rem">
+  <div class="hero-bg"></div>
+  <div class="live-badge">
+    <span class="live-dot"></span>
+    <span id="viewer-count">347</span> watching live now
+  </div>
+
+  <div class="ministry-heading" style="margin-bottom:0.6rem;position:relative;z-index:1;animation:fadeUp 0.7s ease both" id="t-ministry-name">Lightbearer V Ministry</div>
+
+  <h1 id="t-headline">Empowerment of <span>Vision.</span><br>Destiny. Transformation.<br><span>Inspire &amp; Connect.</span></h1>
+  <p class="hero-lead" id="t-lead">Led by Lightbearer V &amp; Mentor V</p>
+  <p class="hero-sub" id="t-sub">The live platform for faith communities. Stream your Sunday sermon, host motivational talks, and invite anyone to join with a single link — no downloads needed.</p>
+  <div class="hero-actions">
+    <a href="#live" class="btn-primary" id="t-cta1">Start your broadcast</a>
+    <a href="#schedule" class="btn-outline" id="t-cta2">See live schedule</a>
+  </div>
+
+  <!-- CHURCH CONTACT BAR -->
+  <div class="church-contact-bar">
+    <div class="contact-item">
+      <span class="contact-icon">📞</span>
+      <span>Church Till:</span>
+      <a class="contact-link" href="tel:+254700000000">+254 700 000 000</a>
+    </div>
+    <div class="contact-item">
+      <span class="contact-icon">💬</span>
+      <span>WhatsApp:</span>
+      <a class="contact-link" href="https://wa.me/254700000000" target="_blank">+254 700 000 000</a>
+    </div>
+    <div class="contact-item">
+      <span class="contact-icon">✉️</span>
+      <a class="contact-link" href="/cdn-cgi/l/email-protection#9cf5f2faf3dcf0f5fbf4e8fef9fdeef9eeeab2f3eefb"><span class="__cf_email__" data-cfemail="cca5a2aaa38ca0a5aba4b8aea9adbea9bebae2a3beab">[email&#160;protected]</span></a>
+    </div>
+  </div>
+
+  <div class="leaders">
+    <div class="leader-card">
+      <div class="leader-avatar">🕯️</div>
+      <div><div class="leader-name" style="font-size:1.05rem;font-weight:600">Lightbearer V</div><div class="leader-role">Lead Pastor &amp; Founder</div></div>
+    </div>
+    <div class="leader-card">
+      <div class="leader-avatar">🌟</div>
+      <div><div class="leader-name" style="font-size:1.05rem;font-weight:600">Mentor V</div><div class="leader-role">Mentor &amp; Co-Minister</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     LIVE SECTION
+════════════════════════════════ -->
+<section id="live">
+  <div class="section-label">Live broadcast</div>
+  <div class="ministry-heading" style="margin-bottom:0.3rem" id="t-live-title">Lightbearer V Ministry</div>
+  <div class="section-title" style="font-size:clamp(1.2rem,2.5vw,1.8rem);margin-top:0.3rem" id="t-live-sub">Mentor V is Live 🔴</div>
+
+  <!-- PIN GATE -->
+  <div id="pin-gate" style="background:var(--deep3);border:0.5px solid rgba(201,168,76,0.3);border-radius:14px;padding:2rem;max-width:380px;margin:1.5rem 0;display:none">
+    <div style="font-size:0.85rem;color:var(--gold);font-weight:500;margin-bottom:0.4rem">🔐 Host Security</div>
+    <div style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem">Enter your 6-digit host PIN to go live.</div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem">
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" oninput="pinInput(this)" onkeydown="pinKey(event,this)"/>
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" oninput="pinInput(this)" onkeydown="pinKey(event,this)"/>
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" oninput="pinInput(this)" onkeydown="pinKey(event,this)"/>
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" oninput="pinInput(this)" onkeydown="pinKey(event,this)"/>
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" oninput="pinInput(this)" onkeydown="pinKey(event,this)"/>
+      <input class="pin-digit" type="password" maxlength="1" inputmode="numeric" oninput="pinInput(this)" onkeydown="pinKey(event,this)"/>
+    </div>
+    <div id="pin-error" style="font-size:0.75rem;color:#f87171;display:none;margin-bottom:0.7rem">❌ Wrong PIN. <span id="pin-attempts-left">2</span> attempts left.</div>
+    <div id="pin-locked" style="font-size:0.75rem;color:#f87171;display:none;margin-bottom:0.7rem">🔒 Locked for <span id="pin-lock-secs">60</span>s.</div>
+    <button class="btn-primary" style="width:100%;padding:0.6rem" onclick="verifyPin()">Unlock &amp; Go Live</button>
+    <div style="font-size:0.68rem;color:var(--muted);margin-top:0.7rem;text-align:center">Default PIN: <strong style="color:var(--gold)">123456</strong></div>
+  </div>
+
+  <!-- LIVE TABS -->
+  <div class="live-tabs" id="live-tabs">
+    <button class="live-tab-btn active" onclick="switchLiveTab('broadcast',this)">📡 Broadcast</button>
+    <button class="live-tab-btn" onclick="switchLiveTab('music',this)">🎵 Gospel Music</button>
+    <button class="live-tab-btn" onclick="switchLiveTab('message',this)">💬 Screen Message</button>
+    <button class="live-tab-btn" onclick="switchLiveTab('advert',this)">📢 Advert</button>
+  </div>
+
+  <!-- ═══ BROADCAST TAB ═══ -->
+  <div class="live-tab-panel active" id="ltab-broadcast">
+
+    <!-- STEP 1: SETUP — shown before going live -->
+    <div id="setup-panel">
+      <div style="background:var(--deep3);border:0.5px solid rgba(201,168,76,0.2);border-radius:14px;padding:1.5rem;max-width:620px;margin-top:1rem">
+        <div style="font-size:0.9rem;font-weight:500;color:var(--white);margin-bottom:0.4rem">How your live works</div>
+        <div style="font-size:0.82rem;color:var(--muted);line-height:1.8;margin-bottom:1.2rem">
+          When you click <strong style="color:var(--cream)">Go Live</strong>, your camera and microphone start and a private video room is created using the Jitsi Meet API — a real, free, professional system used worldwide.<br><br>
+          Your video appears right here on this page. A <strong style="color:var(--gold)">join link</strong> is generated — send it on WhatsApp or SMS. Your members click it and <strong style="color:var(--cream)">hear and see you live</strong> in their own browser. No app, no account needed.
+        </div>
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center">
+          <button class="btn-primary" style="padding:0.7rem 1.8rem;font-size:1rem" onclick="requestLive()" id="go-live-btn">▶ Go Live</button>
+          <div style="font-size:0.78rem;color:var(--muted)">Secure PIN required</div>
+        </div>
+
+        <!-- ROOM NAME CUSTOMISER -->
+        <div style="margin-top:1.2rem;padding-top:1rem;border-top:0.5px solid rgba(255,255,255,0.07)">
+          <div style="font-size:0.76rem;color:var(--muted);margin-bottom:0.4rem">Custom room name (optional — letters and numbers only)</div>
+          <div style="display:flex;gap:8px">
+            <input id="room-name-input" class="f-input" style="max-width:240px;padding:0.45rem 0.8rem;font-size:0.85rem" placeholder="e.g. LightbearerSunday" value="LightbearerV-Ministry"/>
+            <button class="ctrl-btn" onclick="applyRoomName()">Set</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE PANEL — shown after PIN verified -->
+    <div id="live-panel" style="display:none">
+      <div class="live-layout">
+        <!-- JITSI VIDEO STAGE -->
+        <div class="video-stage">
+
+          <!-- JITSI API CONTAINER -->
+          <div id="jitsi-container" style="position:relative;border-radius:14px;overflow:hidden;background:#080808;border:1px solid rgba(201,168,76,0.15);min-height:400px">
+            <!-- Jitsi Meet External API mounts here -->
+            <!-- SCREEN MESSAGE OVERLAY (over the video) -->
+            <div id="screen-msg-overlay" style="display:none;position:absolute;inset:0;z-index:30;align-items:center;justify-content:center;background:rgba(0,0,0,0.78);pointer-events:none">
+              <div id="screen-msg-text" style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,4vw,3rem);font-weight:700;color:var(--gold);text-align:center;padding:1.5rem 2rem;text-shadow:0 2px 16px rgba(0,0,0,0.8);line-height:1.3;max-width:90%"></div>
+            </div>
+            <!-- ADVERT OVERLAY -->
+            <div id="advert-overlay" style="display:none;position:absolute;inset:0;z-index:35;background:rgba(0,0,0,0.9);align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+              <div style="background:var(--deep2);border:1.5px solid var(--gold);border-radius:14px;padding:1.5rem 2rem;max-width:80%;text-align:center">
+                <div style="font-size:0.68rem;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.5rem">Announcement</div>
+                <div id="advert-title-display" style="font-family:'Playfair Display',serif;font-size:clamp(1.1rem,3vw,2rem);font-weight:700;color:var(--white);margin-bottom:0.5rem"></div>
+                <div id="advert-body-display" style="font-size:0.88rem;color:var(--cream);line-height:1.6"></div>
+                <div style="margin-top:0.8rem;font-size:0.75rem;color:var(--muted)">Closing in <span id="advert-secs">15</span>s</div>
+              </div>
+              <button onclick="closeAdvert()" style="background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:0.4rem 1.2rem;font-size:0.78rem;color:var(--cream);cursor:pointer">Skip</button>
+            </div>
+          </div>
+
+          <!-- LIVE STATUS BAR -->
+          <div style="background:var(--deep3);border-radius:10px;padding:0.6rem 1rem;display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:#f87171;font-weight:500">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite;display:inline-block"></span>
+              LIVE — Mentor V is broadcasting
+            </span>
+            <span style="font-size:0.78rem;color:var(--muted)" id="live-viewer-count">👁 Members can now join</span>
+            <div style="margin-left:auto;display:flex;gap:6px">
+              <button class="ctrl-btn" style="padding:0.38rem 0.9rem;font-size:0.78rem" onclick="requestLive()" id="end-live-btn">⏹ End Live</button>
+            </div>
+          </div>
+
+          <!-- SHARE LINK BOX — the most important part -->
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.35);border-radius:12px;padding:1rem 1.2rem">
+            <div style="font-size:0.78rem;color:var(--gold);font-weight:500;margin-bottom:0.5rem">📲 Share this link — members click it to join and hear you live</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <div id="join-link-display" style="flex:1;background:var(--deep3);border-radius:8px;padding:0.5rem 0.8rem;font-size:0.8rem;color:var(--cream);font-family:monospace;word-break:break-all;min-width:200px"></div>
+              <button class="ctrl-btn" style="padding:0.42rem 0.9rem;font-size:0.8rem" onclick="copyJoinLink()">📋 Copy</button>
+              <button class="ctrl-btn" style="padding:0.42rem 0.9rem;font-size:0.8rem;background:rgba(37,211,102,0.12);border-color:rgba(37,211,102,0.3);color:#25d366" onclick="whatsappJoinLink()">💬 WhatsApp</button>
+            </div>
+            <div style="margin-top:0.6rem;font-size:0.72rem;color:var(--muted)">Members do not need any app or account — just click the link and they are in.</div>
+          </div>
+
+          <!-- REACTIONS -->
+          <div class="reactions-bar">
+            <span style="font-size:0.72rem;color:var(--muted);margin-right:4px">React:</span>
+            <button class="reaction-btn" onclick="react(this,'🙏')">🙏 <span class="r-cnt">84</span></button>
+            <button class="reaction-btn" onclick="react(this,'❤️')">❤️ <span class="r-cnt">61</span></button>
+            <button class="reaction-btn" onclick="react(this,'🔥')">🔥 <span class="r-cnt">39</span></button>
+            <button class="reaction-btn" onclick="react(this,'✨')">✨ <span class="r-cnt">22</span></button>
+            <button class="reaction-btn" onclick="react(this,'👑')">👑 <span class="r-cnt">17</span></button>
+            <button class="reaction-btn" onclick="react(this,'🕊️')">🕊️ <span class="r-cnt">11</span></button>
+          </div>
+        </div>
+
+        <!-- CHAT COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:0.8rem">
+          <div class="chat-col">
+            <div class="chat-head">
+              <span class="chat-head-title">Send a message to my members</span>
+              <span class="chat-online"><span class="chat-online-dot"></span><span id="chat-online-count">347</span> online</span>
+            </div>
+            <div class="chat-msgs" id="chat-msgs"></div>
+            <div class="chat-input-row">
+              <input class="chat-input" id="chat-input" placeholder="Message your members…" maxlength="200" onkeydown="if(event.key==='Enter')sendChat()"/>
+              <button class="chat-send" onclick="sendChat()">➤</button>
+            </div>
+          </div>
+          <div class="waitroom-panel" id="waitroom-panel">
+            <div class="waitroom-title">
+              <span>Waiting room <span id="wait-count-badge" style="background:var(--red);color:#fff;font-size:0.65rem;padding:1px 6px;border-radius:10px;margin-left:4px">0</span></span>
+              <span style="font-size:0.7rem;color:var(--muted)">Admit members</span>
+            </div>
+            <div class="waitroom-list" id="waitroom-list"><div class="waitroom-empty">No one waiting yet</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GOSPEL MUSIC TAB ═══ -->
+  <div class="live-tab-panel" id="ltab-music">
+    <div style="max-width:720px">
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.2rem">Play gospel music while your congregation gathers before the service begins.</div>
+      <div class="music-player" id="music-player">
+        <div class="music-now-playing" id="music-now">
+          <div class="music-disc" id="music-disc">🎵</div>
+          <div>
+            <div class="music-track-name" id="music-track-name">Select a track to play</div>
+            <div class="music-track-artist" id="music-track-artist">Gospel Music — Pre-Service</div>
+          </div>
+        </div>
+        <div class="music-progress-row">
+          <span class="music-time" id="music-cur">0:00</span>
+          <div class="music-progress-bar" onclick="seekMusic(event)"><div class="music-progress-fill" id="music-fill"></div></div>
+          <span class="music-time" id="music-dur">0:00</span>
+        </div>
+        <div class="music-controls">
+          <button class="music-ctrl-btn" onclick="prevTrack()">⏮</button>
+          <button class="music-ctrl-btn music-play-btn" id="music-play-btn" onclick="togglePlay()">▶</button>
+          <button class="music-ctrl-btn" onclick="nextTrack()">⏭</button>
+          <button class="music-ctrl-btn" id="music-shuffle-btn" onclick="toggleShuffle()">🔀</button>
+          <button class="music-ctrl-btn" id="music-repeat-btn" onclick="toggleRepeat()">🔁</button>
+          <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+            <span style="font-size:0.75rem;color:var(--muted)">🔊</span>
+            <input type="range" min="0" max="100" value="80" id="music-vol" style="width:80px" oninput="setVolume(this.value)"/>
+          </div>
+        </div>
+        <audio id="audio-player" preload="none"></audio>
+      </div>
+      <div style="margin-top:1.2rem">
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.7rem;display:flex;justify-content:space-between;align-items:center">
+          <span>🎶 Gospel Playlist</span>
+          <label style="font-size:0.75rem;color:var(--gold);cursor:pointer">
+            <input type="file" accept="audio/*" multiple style="display:none" onchange="addTracks(this)"/> + Add your music
+          </label>
+        </div>
+        <div class="playlist" id="playlist"></div>
+      </div>
+      <div style="margin-top:1rem;padding:0.8rem 1rem;background:var(--deep3);border-radius:10px;font-size:0.78rem;color:var(--muted)">
+        💡 Upload your own gospel MP3s using "+ Add your music". Music pauses automatically when you start preaching.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN MESSAGE TAB ═══ -->
+  <div class="live-tab-panel" id="ltab-message">
+    <div style="max-width:640px">
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.2rem">Display a message on the live screen — scriptures, announcements, welcome texts.</div>
+      <div class="screen-msg-composer">
+        <div class="form-row">
+          <label class="form-label">Message to display on screen</label>
+          <textarea class="f-textarea" id="screen-msg-input" placeholder="e.g. Welcome to Sunday Service! John 3:16" style="min-height:80px;font-size:1rem"></textarea>
+        </div>
+        <div class="form-row" style="display:flex;gap:0.7rem;flex-wrap:wrap;align-items:center">
+          <label class="form-label" style="margin:0">Size:</label>
+          <button class="msg-size-btn active" onclick="setMsgSize('small',this)">Small</button>
+          <button class="msg-size-btn" onclick="setMsgSize('medium',this)">Medium</button>
+          <button class="msg-size-btn" onclick="setMsgSize('large',this)">Large</button>
+        </div>
+        <div class="form-row" style="display:flex;gap:0.7rem;flex-wrap:wrap;align-items:center">
+          <label class="form-label" style="margin:0">Colour:</label>
+          <button class="msg-color-btn active" style="background:var(--gold)" onclick="setMsgColor('var(--gold)',this)"></button>
+          <button class="msg-color-btn" style="background:#fff" onclick="setMsgColor('#fff',this)"></button>
+          <button class="msg-color-btn" style="background:#7ee8a2" onclick="setMsgColor('#7ee8a2',this)"></button>
+          <button class="msg-color-btn" style="background:#f87171" onclick="setMsgColor('#f87171',this)"></button>
+          <button class="msg-color-btn" style="background:#93c5fd" onclick="setMsgColor('#93c5fd',this)"></button>
+        </div>
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:0.5rem">
+          <button class="btn-primary" style="padding:0.6rem 1.5rem" onclick="showScreenMsg()">📺 Show on screen</button>
+          <button class="ctrl-btn" onclick="hideScreenMsg()">✕ Clear screen</button>
+        </div>
+        <div style="margin-top:1rem">
+          <div style="font-size:0.76rem;color:var(--muted);margin-bottom:0.5rem">Quick scriptures:</div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button class="template-btn" onclick="quickMsg('John 3:16 — For God so loved the world that He gave His only Son.')">John 3:16</button>
+            <button class="template-btn" onclick="quickMsg('Jeremiah 29:11 — I know the plans I have for you, plans to prosper you.')">Jer 29:11</button>
+            <button class="template-btn" onclick="quickMsg('Welcome to Lightbearer V Ministry — Sunday Service 🙏')">Welcome</button>
+            <button class="template-btn" onclick="quickMsg('Please silence your phones. Service is about to begin.')">Silence phones</button>
+            <button class="template-btn" onclick="quickMsg('Offering time — Give cheerfully! 2 Cor 9:7')">Offering</button>
+            <button class="template-btn" onclick="quickMsg('Thank you for joining us today. God bless you! 🕊️')">Goodbye</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ADVERT TAB ═══ -->
+  <div class="live-tab-panel" id="ltab-advert">
+    <div style="max-width:640px">
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.2rem">Create an advert that overlays the broadcast mid-session.</div>
+      <div class="advert-composer">
+        <div class="form-row">
+          <label class="form-label">Advert title / headline</label>
+          <input class="f-input" id="advert-title" placeholder="e.g. Lightbearer V Ministry Conference 2026"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Advert body / details</label>
+          <textarea class="f-textarea" id="advert-body" placeholder="Join us on 12th July 2026 at Nairobi City Hall…" style="min-height:90px"></textarea>
+        </div>
+        <div class="form-row" style="display:flex;gap:1rem;flex-wrap:wrap">
+          <div><label class="form-label">Duration (seconds)</label><input class="f-input" id="advert-duration" type="number" value="15" min="5" max="120" style="width:100px"/></div>
+          <div><label class="form-label">Auto-play after (minutes)</label><input class="f-input" id="advert-delay" type="number" value="0" min="0" max="120" style="width:100px" placeholder="0=manual"/></div>
+        </div>
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:0.5rem">
+          <button class="btn-primary" style="padding:0.6rem 1.5rem;background:var(--red);color:#fff" onclick="launchAdvert()">📢 Play advert now</button>
+          <button class="ctrl-btn" onclick="scheduleAdvert()">⏱ Schedule advert</button>
+          <button class="ctrl-btn" onclick="closeAdvert()">✕ Stop advert</button>
+        </div>
+        <div id="advert-schedule-status" style="margin-top:0.8rem;font-size:0.78rem;color:var(--gold);display:none"></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── FEATURES ── -->
+<section id="features">
+  <div class="section-label reveal">What we offer</div>
+  <div class="section-title reveal">Everything your ministry needs to go live</div>
+  <div class="features-grid">
+    <div class="feat-card reveal"><div class="feat-icon">📡</div><div class="feat-title">Live streaming</div><div class="feat-text">Broadcast your Sunday service and motivational talks in real time to your congregation, wherever they are.</div></div>
+    <div class="feat-card reveal"><div class="feat-icon">🔗</div><div class="feat-title">Instant invite links</div><div class="feat-text">Send one link and anyone joins your live service instantly — no downloads, no account required.</div></div>
+    <div class="feat-card reveal"><div class="feat-icon">🎥</div><div class="feat-title">Zoom-style meetings</div><div class="feat-text">Host interactive video meetings — see faces, hear voices, feel the presence of community.</div></div>
+    <div class="feat-card reveal"><div class="feat-icon">🚪</div><div class="feat-title">Listener admission</div><div class="feat-text">Control who enters your live. Viewers wait in a waiting room and you admit them one by one.</div></div>
+    <div class="feat-card reveal"><div class="feat-icon">✉️</div><div class="feat-title">Email your flock</div><div class="feat-text">Compose and send emails to your congregation directly from the platform — service invites, news, prayers.</div></div>
+    <div class="feat-card reveal"><div class="feat-icon">🌍</div><div class="feat-title">Global reach</div><div class="feat-text">Reach members across Kenya, Africa, and the world. Your message has no borders.</div></div>
+  </div>
+</section>
+
+<!-- ── SCHEDULE ── -->
+<section id="schedule">
+  <div class="section-label reveal">Upcoming services</div>
+  <div class="section-title reveal">This week's live schedule</div>
+  <div class="tabs reveal">
+    <button class="tab-btn active" onclick="switchTab(this,'sunday')">Sunday</button>
+    <button class="tab-btn" onclick="switchTab(this,'wednesday')">Wednesday</button>
+    <button class="tab-btn" onclick="switchTab(this,'friday')">Friday</button>
+  </div>
+  <div class="tab-content active" id="tab-sunday">
+    <div class="sched-list">
+      <div class="sched-item"><div class="sched-time">8:00 AM</div><div class="sched-info"><div class="sched-title-text">Morning Devotion</div><div class="sched-host-text">Mentor V</div></div><span class="sched-badge badge-done">Ended</span><button class="join-sched-btn off">Replay</button></div>
+      <div class="sched-item"><div class="sched-time">10:00 AM</div><div class="sched-info"><div class="sched-title-text">Sunday Main Service</div><div class="sched-host-text">Lightbearer V</div></div><span class="sched-badge badge-live">● Live</span><button class="join-sched-btn" onclick="document.getElementById('live').scrollIntoView({behavior:'smooth'});showToast('Joining Sunday Service 🙏')">Join now</button></div>
+      <div class="sched-item"><div class="sched-time">2:00 PM</div><div class="sched-info"><div class="sched-title-text">Youth Motivational Talk</div><div class="sched-host-text">Mentor V</div></div><span class="sched-badge badge-soon">Soon</span><button class="join-sched-btn" onclick="showToast('Reminder set for 2:00 PM ✦')">Remind me</button></div>
+      <div class="sched-item"><div class="sched-time">6:00 PM</div><div class="sched-info"><div class="sched-title-text">Evening Praise &amp; Worship</div><div class="sched-host-text">Lightbearer V &amp; Mentor V</div></div><span class="sched-badge badge-soon">Soon</span><button class="join-sched-btn" onclick="showToast('Reminder set for 6:00 PM ✦')">Remind me</button></div>
+    </div>
+  </div>
+  <div class="tab-content" id="tab-wednesday">
+    <div class="sched-list">
+      <div class="sched-item"><div class="sched-time">7:00 PM</div><div class="sched-info"><div class="sched-title-text">Midweek Bible Study</div><div class="sched-host-text">Lightbearer V</div></div><span class="sched-badge badge-soon">Wed</span><button class="join-sched-btn" onclick="showToast('Reminder set for Wednesday ✦')">Remind me</button></div>
+      <div class="sched-item"><div class="sched-time">8:30 PM</div><div class="sched-info"><div class="sched-title-text">Purpose &amp; Vision Talk</div><div class="sched-host-text">Mentor V</div></div><span class="sched-badge badge-soon">Wed</span><button class="join-sched-btn" onclick="showToast('Reminder set ✦')">Remind me</button></div>
+    </div>
+  </div>
+  <div class="tab-content" id="tab-friday">
+    <div class="sched-list">
+      <div class="sched-item"><div class="sched-time">6:00 PM</div><div class="sched-info"><div class="sched-title-text">Friday Night Prayer</div><div class="sched-host-text">Lightbearer V &amp; Mentor V</div></div><span class="sched-badge badge-soon">Fri</span><button class="join-sched-btn" onclick="showToast('Reminder set for Friday ✦')">Remind me</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how">
+  <div class="section-label reveal">Simple process</div>
+  <div class="section-title reveal">From setup to live in minutes</div>
+  <div class="steps-grid">
+    <div class="step-card reveal"><div class="step-nbg">1</div><div class="step-n">1</div><div class="step-title">Create your channel</div><div class="step-text">Sign up and set up your ministry channel with name, photo, and service times.</div></div>
+    <div class="step-card reveal"><div class="step-nbg">2</div><div class="step-n">2</div><div class="step-title">Schedule your service</div><div class="step-text">Pick your Sunday sermon or motivational talk slot. Your audience gets notified.</div></div>
+    <div class="step-card reveal"><div class="step-nbg">3</div><div class="step-n">3</div><div class="step-title">Share your link</div><div class="step-text">Send your invite link via WhatsApp, SMS, or email. Anyone joins in one tap.</div></div>
+    <div class="step-card reveal"><div class="step-nbg">4</div><div class="step-n">4</div><div class="step-title">Admit &amp; preach</div><div class="step-text">Approve listeners from the waiting room, go live, and deliver your message.</div></div>
+  </div>
+</section>
+
+<!-- ── PRAYER REQUEST ── -->
+<section id="prayer">
+  <div class="section-label reveal">Prayer wall</div>
+  <div class="section-title reveal">Submit a prayer request</div>
+  <div class="section-body reveal">Share your request and our community will pray with you.</div>
+  <div class="prayer-form-wrap reveal">
+    <div id="prayer-inner">
+      <div class="form-row"><label class="form-label">Your name</label><input class="f-input" id="p-name" placeholder="e.g. Grace Mwangi"/></div>
+      <div class="form-row"><label class="form-label">Your prayer request</label><textarea class="f-textarea" id="p-text" placeholder="Share what's on your heart…"></textarea></div>
+      <div class="form-row"><label class="form-label">Category</label>
+        <select class="f-select" id="p-type">
+          <option value="">Select a category</option>
+          <option>Healing &amp; health</option>
+          <option>Family &amp; relationships</option>
+          <option>Finances &amp; provision</option>
+          <option>Spiritual growth</option>
+          <option>Guidance &amp; direction</option>
+          <option>Thanksgiving</option>
+        </select>
+      </div>
+      <button class="prayer-submit-btn" onclick="submitPrayer()">🙏 Submit prayer request</button>
+    </div>
+    <div class="prayer-ok" id="prayer-ok"><span>🙏</span>Prayer submitted. Our community is praying with you.</div>
+  </div>
+</section>
+
+<!-- ── EMAIL COMPOSE ── -->
+<section id="email-section">
+  <div class="section-label reveal">Email your congregation</div>
+  <div class="section-title reveal">Send a message to your flock</div>
+  <div class="section-body reveal">Compose and send emails directly — service invites, announcements, or personal encouragement.</div>
+
+  <div class="email-templates reveal">
+    <button class="template-btn" onclick="fillTemplate('invite')">📅 Service invite</button>
+    <button class="template-btn" onclick="fillTemplate('prayer')">🙏 Prayer call</button>
+    <button class="template-btn" onclick="fillTemplate('encourage')">💛 Encouragement</button>
+    <button class="template-btn" onclick="fillTemplate('zoom')">🎥 Zoom meeting link</button>
+  </div>
+
+  <div class="email-compose reveal">
+    <div class="email-toolbar">
+      <span class="email-toolbar-title">New message — Lightbearer V Ministry</span>
+      <span style="font-size:0.72rem;color:var(--muted)">Opens in Gmail / Mail app</span>
+    </div>
+    <div class="email-field">
+      <span class="email-field-label">To</span>
+      <input id="email-to" placeholder="recipient@email.com" type="email"/>
+    </div>
+    <div class="email-field">
+      <span class="email-field-label">Subject</span>
+      <input id="email-subject" placeholder="e.g. You're invited to Sunday Service"/>
+    </div>
+    <textarea class="email-body-area" id="email-body" placeholder="Write your message here…"></textarea>
+    <div class="email-actions">
+      <button class="send-email-btn" onclick="sendEmail()">✉️ Send email</button>
+      <button class="ctrl-btn" onclick="clearEmail()">🗑 Clear</button>
+      <span class="email-note">Opens your default email app (Gmail, Outlook, etc.)</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section id="testimonials">
+  <div class="section-label reveal">Community voices</div>
+  <div class="section-title reveal">What our congregation says</div>
+  <div class="testi-grid">
+    <div class="testi-card reveal"><div class="testi-stars">★★★★★</div><div class="testi-quote">"Lightbearer V's Sunday message reached over 200 people across three countries. SundayLive made it effortless."</div><div class="testi-author"><div class="testi-av">AM</div><div><div class="testi-name">Amos Mwangi</div><div class="testi-role">Nairobi, Kenya</div></div></div></div>
+    <div class="testi-card reveal"><div class="testi-stars">★★★★★</div><div class="testi-quote">"I joined the service from London using just a WhatsApp link. It felt like I never left home."</div><div class="testi-author"><div class="testi-av">GN</div><div><div class="testi-name">Grace Njeri</div><div class="testi-role">London, UK</div></div></div></div>
+    <div class="testi-card reveal"><div class="testi-stars">★★★★★</div><div class="testi-quote">"Mentor V's Wednesday motivational talks have completely changed my week. I never miss a session."</div><div class="testi-author"><div class="testi-av">DO</div><div><div class="testi-name">David Odhiambo</div><div class="testi-role">Kisumu, Kenya</div></div></div></div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section id="cta">
+  <div class="section-label reveal">Get started</div>
+  <div class="section-title reveal">Ready to take your ministry online?</div>
+  <div class="section-body reveal">Enter your email and we'll set up your channel — free to start, live in minutes.</div>
+  <div class="invite-box reveal">
+    <input type="email" id="cta-email" placeholder="Your email address" onkeydown="if(event.key==='Enter')submitCTA()"/>
+    <button onclick="submitCTA()">Join free</button>
+  </div>
+  <div class="cta-ok" id="cta-ok">✦ Welcome! Check your email to get started.</div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div>
+    <div class="footer-logo" style="font-size:1.5rem;font-weight:900" id="t-footer-logo">Lightbearer V Ministry</div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:3px" id="t-footer-tag">Vision · Destiny · Transformation · Inspire · Connect</div>
+    <div style="margin-top:0.5rem;display:flex;gap:1rem;flex-wrap:wrap">
+      <a class="contact-link" href="tel:+254700000000" style="font-size:0.75rem;color:var(--muted)">📞 +254 700 000 000</a>
+      <a class="contact-link" href="/cdn-cgi/l/email-protection#2f464149406f434648475b4d4a4e5d4a5d5901405d48" style="font-size:0.75rem;color:var(--muted)">✉️ <span class="__cf_email__" data-cfemail="6e070008012e020709061a0c0b0f1c0b1c1840011c09">[email&#160;protected]</span></a>
+    </div>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#live">Go Live</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#prayer">Prayer</a></li>
+    <li><a href="#email-section">Email</a></li>
+    <li><a href="#testimonials">Community</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 Lightbearer V Ministry · SundayLive</div>
+</footer>
+
+
+<script>
+
+/* ══════════════════════════
+   VIEWER COUNT
+══════════════════════════ */
+var viewerCount=347;
+function tickViewers(){
+  viewerCount+=Math.floor(Math.random()*5)-1;
+  if(viewerCount<280)viewerCount=280;
+  var s=viewerCount.toLocaleString();
+  document.getElementById('viewer-count').textContent=s;
+  var co=document.getElementById('chat-online-count');
+  if(co)co.textContent=s;
+}
+setInterval(tickViewers,3500);
+
+/* ══════════════════════════
+   ROOM / JITSI CONFIG
+══════════════════════════ */
+var JITSI_DOMAIN='meet.jit.si';
+var roomName='LightbearerV-Ministry';
+var isLive=false;
+var advertCountdown=null, advertScheduleTimer=null;
+var msgSize='small', msgColor='var(--gold)';
+
+function applyRoomName(){
+  var v=document.getElementById('room-name-input').value.trim().replace(/[^a-zA-Z0-9-]/g,'');
+  if(v){ roomName=v; document.getElementById('room-name-input').value=v; showToast('Room name set to: '+v); }
+  else showToast('Use letters and numbers only.');
+}
+
+/* ══════════════════════════
+   PIN SECURITY
+══════════════════════════ */
+var HOST_PIN='123456', pinAttempts=0, pinLocked=false, pinLockTimer=null;
+
+function requestLive(){
+  if(isLive){ endLive(); return; }
+  var gate=document.getElementById('pin-gate');
+  gate.style.display=(gate.style.display==='none'||gate.style.display==='')?'block':'none';
+  if(gate.style.display==='block'){
+    document.querySelectorAll('.pin-digit').forEach(function(d){d.value='';d.classList.remove('filled','error');});
+    document.getElementById('pin-error').style.display='none';
+    document.getElementById('pin-locked').style.display='none';
+    document.querySelector('.pin-digit').focus();
+  }
+}
+
+function pinInput(el){
+  el.classList.toggle('filled',el.value.length>0);
+  if(el.value.length===1){
+    var next=el.nextElementSibling;
+    if(next&&next.classList.contains('pin-digit'))next.focus();
+    else verifyPin();
+  }
+}
+function pinKey(e,el){
+  if(e.key==='Backspace'&&el.value===''&&el.previousElementSibling)el.previousElementSibling.focus();
+}
+
+function verifyPin(){
+  if(pinLocked){showToast('PIN locked — wait.');return;}
+  var entered='';
+  document.querySelectorAll('.pin-digit').forEach(function(d){entered+=d.value;});
+  if(entered.length<6){showToast('Enter all 6 digits.');return;}
+  if(entered===HOST_PIN){
+    pinAttempts=0;
+    document.getElementById('pin-gate').style.display='none';
+    document.querySelectorAll('.pin-digit').forEach(function(d){d.value='';d.classList.remove('filled','error');});
+    startLive();
+  } else {
+    pinAttempts++;
+    document.querySelectorAll('.pin-digit').forEach(function(d){d.value='';d.classList.remove('filled');d.classList.add('error');});
+    setTimeout(function(){document.querySelectorAll('.pin-digit').forEach(function(d){d.classList.remove('error');});},600);
+    document.querySelectorAll('.pin-digit')[0].focus();
+    var left=3-pinAttempts;
+    if(left<=0){
+      pinLocked=true;
+      var secs=60;
+      document.getElementById('pin-error').style.display='none';
+      document.getElementById('pin-locked').style.display='block';
+      pinLockTimer=setInterval(function(){
+        secs--;
+        document.getElementById('pin-lock-secs').textContent=secs;
+        if(secs<=0){clearInterval(pinLockTimer);pinLocked=false;pinAttempts=0;document.getElementById('pin-locked').style.display='none';}
+      },1000);
+    } else {
+      document.getElementById('pin-error').style.display='block';
+      document.getElementById('pin-attempts-left').textContent=left;
+    }
+    showToast('Wrong PIN — '+left+' attempts left');
+  }
+}
+
+/* ══════════════════════════
+   JITSI LIVE BROADCAST
+   ─────────────────────────
+   Uses meet.jit.si — a free,
+   real, open-source video
+   conferencing system.
+   Members click the join link
+   and land on the same Jitsi
+   room and hear/see Mentor V.
+══════════════════════════ */
+function startLive(){
+  isLive=true;
+  document.getElementById('setup-panel').style.display='none';
+  document.getElementById('live-panel').style.display='block';
+  document.getElementById('waitroom-panel').classList.add('show');
+
+  /* Build the join link — direct Jitsi link that ALWAYS works */
+  var joinUrl='https://'+JITSI_DOMAIN+'/'+roomName;
+  document.getElementById('join-link-display').textContent=joinUrl;
+  window._joinLink=joinUrl;
+
+  /* Size the container */
+  var container=document.getElementById('jitsi-container');
+  var w=container.offsetWidth||640;
+  container.style.height=Math.max(380,Math.round(w*9/16))+'px';
+
+  /* Load Jitsi External API script then mount */
+  if(window.JitsiMeetExternalAPI){
+    mountJitsi(container);
+  } else {
+    var s=document.createElement('script');
+    s.src='https://'+JITSI_DOMAIN+'/external_api.js';
+    s.onload=function(){mountJitsi(container);};
+    s.onerror=function(){
+      /* Fallback: show a direct-open button instead */
+      container.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;padding:2rem;text-align:center">'
+        +'<div style="font-size:2.5rem">🎤</div>'
+        +'<div style="font-size:0.9rem;color:#C9A84C;font-weight:500">Your broadcast room is ready!</div>'
+        +'<div style="font-size:0.8rem;color:#888;line-height:1.6">Click the button below to open your live room.<br>Share the join link with your members — they click it to hear you.</div>'
+        +'<a href="'+joinUrl+'" target="_blank" style="background:#C9A84C;color:#0D0D0D;border:none;border-radius:40px;padding:0.7rem 2rem;font-size:0.95rem;font-weight:500;text-decoration:none;cursor:pointer">🔴 Open my live room</a>'
+        +'<div style="font-size:0.72rem;color:#888">Opens in a new tab — your members use the same link below</div>'
+        +'</div>';
+    };
+    document.head.appendChild(s);
+  }
+
+  showToast('You are LIVE! Share the join link 🔴');
+  simulateWaitroom();
+  pauseMusicForLive();
+  document.getElementById('end-live-btn').onclick=endLive;
+}
+
+function mountJitsi(container){
+  /* Clear container content except overlays */
+  var overlays=[];
+  Array.from(container.children).forEach(function(c){
+    if(c.id==='screen-msg-overlay'||c.id==='advert-overlay') overlays.push(c);
+  });
+  container.innerHTML='';
+  overlays.forEach(function(o){container.appendChild(o);});
+
+  /* Create a div inside container for Jitsi to mount into */
+  var mountDiv=document.createElement('div');
+  mountDiv.id='jitsi-mount';
+  mountDiv.style.cssText='width:100%;height:100%;position:absolute;inset:0;';
+  container.insertBefore(mountDiv, container.firstChild);
+
+  try{
+    window._jitsiApi=new JitsiMeetExternalAPI(JITSI_DOMAIN,{
+      roomName: roomName,
+      parentNode: mountDiv,
+      width: '100%',
+      height: '100%',
+      userInfo:{displayName:'Mentor V (Host)'},
+      configOverwrite:{
+        startWithAudioMuted: false,
+        startWithVideoMuted: false,
+        prejoinPageEnabled: false,
+        disableDeepLinking: true,
+        enableWelcomePage: false,
+        toolbarButtons:['microphone','camera','hangup','tileview','fullscreen','settings','chat'],
+        hiddenPremeetingButtons:['invite'],
+        disableInviteFunctions: true,
+        enableInsecureRoomNameWarning: false
+      },
+      interfaceConfigOverwrite:{
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_BRAND_WATERMARK: false,
+        APP_NAME: 'Lightbearer V Ministry',
+        NATIVE_APP_NAME: 'Lightbearer V Ministry',
+        TOOLBAR_ALWAYS_VISIBLE: true,
+        DEFAULT_BACKGROUND: '#0D0D0D',
+        HIDE_INVITE_MORE_HEADER: true
+      }
+    });
+    window._jitsiApi.on('videoConferenceLeft', endLive);
+  }catch(e){
+    /* API failed — show open-in-tab fallback */
+    var joinUrl=window._joinLink;
+    container.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;padding:2rem;text-align:center">'
+      +'<div style="font-size:2.5rem">🎤</div>'
+      +'<div style="font-size:0.9rem;color:#C9A84C;font-weight:500">Your broadcast room is ready!</div>'
+      +'<div style="font-size:0.8rem;color:#888;line-height:1.6">Click below to open your live room in a new tab.<br>Your members use the same join link.</div>'
+      +'<a href="'+joinUrl+'" target="_blank" style="background:#C9A84C;color:#0D0D0D;border:none;border-radius:40px;padding:0.7rem 2rem;font-size:0.95rem;font-weight:500;text-decoration:none">🔴 Open my live room</a>'
+      +'</div>';
+  }
+}
+
+function endLive(){
+  isLive=false;
+  if(window._jitsiApi){try{window._jitsiApi.dispose();}catch(e){}window._jitsiApi=null;}
+  var mount=document.getElementById('jitsi-mount');
+  if(mount)mount.remove();
+  document.getElementById('setup-panel').style.display='block';
+  document.getElementById('live-panel').style.display='none';
+  document.getElementById('waitroom-panel').classList.remove('show');
+  closeAdvert();
+  hideScreenMsg();
+  showToast('Broadcast ended. God bless! 🙏');
+}
+
+/* ══════════════════════════
+   COPY / SHARE JOIN LINK
+══════════════════════════ */
+function copyJoinLink(){
+  var link=window._joinLink||('https://'+JITSI_DOMAIN+'/'+roomName);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(link).then(function(){showToast('Join link copied! Send it on WhatsApp 📋');});
+  } else {
+    prompt('Copy and send this link to your members:',link);
+  }
+}
+
+function whatsappJoinLink(){
+  var link=window._joinLink||('https://'+JITSI_DOMAIN+'/'+roomName);
+  var msg=encodeURIComponent(
+    'You are invited to join Mentor V LIVE on Lightbearer V Ministry!\n\n'
+    +'Click the link below to watch and hear the service:\n'
+    +link+'\n\nNo app needed — just click the link.'
+  );
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+/* Keep old copyLink / shareWhatsApp working */
+function copyLink(){copyJoinLink();}
+function shareWhatsApp(){whatsappJoinLink();}
+
+/* ══════════════════════════
+   WAITROOM (simulated UI)
+══════════════════════════ */
+var waitroomUsers=[], waitroomNames=['Amos M.','Grace N.','David K.','Ruth O.','Mary W.','John A.','Faith N.','Peter M.','Sarah L.','Moses K.','Esther W.','Isaac T.','Joy A.','Daniel M.','Lydia K.'];
+var waitIdx=0;
+function simulateWaitroom(){
+  setTimeout(function tick(){
+    if(!isLive)return;
+    if(waitIdx<waitroomNames.length){addToWaitroom(waitroomNames[waitIdx]);waitIdx++;}
+    setTimeout(tick,5000+Math.random()*5000);
+  },4000);
+}
+function addToWaitroom(name){waitroomUsers.push(name);renderWaitroom();}
+function renderWaitroom(){
+  var list=document.getElementById('waitroom-list');
+  var badge=document.getElementById('wait-count-badge');
+  if(!list||!badge)return;
+  badge.textContent=waitroomUsers.length;
+  if(!waitroomUsers.length){list.innerHTML='<div class="waitroom-empty">No one waiting yet</div>';return;}
+  list.innerHTML='';
+  waitroomUsers.forEach(function(name){
+    var div=document.createElement('div');div.className='waitroom-item';
+    var init=name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    div.setAttribute('data-name', name);
+    div.innerHTML='<div class="chat-av" style="width:24px;height:24px;font-size:0.58rem">'+init+'</div>'
+      +'<span class="waitroom-name">'+name+'</span>'
+      +'<button class="admit-btn" onclick="admitUser(this)">Admit</button>'
+      +'<button class="deny-btn" onclick="denyUser(this)">Deny</button>';
+    list.appendChild(div);
+  });
+}
+function admitUser(btn){
+  var name=btn.closest('[data-name]').getAttribute('data-name');
+  waitroomUsers=waitroomUsers.filter(function(u){return u!==name;});
+  renderWaitroom();
+  addChatMsg(name,name.split(' ').map(function(w){return w[0];}).join('').substring(0,2),'Just joined! Praise God 🙏');
+  showToast(name+' admitted');
+}
+function denyUser(btn){
+  var name=btn.closest('[data-name]').getAttribute('data-name');
+  waitroomUsers=waitroomUsers.filter(function(u){return u!==name;});
+  renderWaitroom();
+  showToast(name+' denied entry');
+}
+
+/* ══════════════════════════
+   SCREEN MESSAGE
+══════════════════════════ */
+function setMsgSize(size,btn){msgSize=size;document.querySelectorAll('.msg-size-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
+function setMsgColor(color,btn){msgColor=color;document.querySelectorAll('.msg-color-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
+function showScreenMsg(){
+  var txt=document.getElementById('screen-msg-input').value.trim();
+  if(!txt){showToast('Type a message first.');return;}
+  var overlay=document.getElementById('screen-msg-overlay');
+  var el=document.getElementById('screen-msg-text');
+  if(!overlay||!el){showToast('Start your broadcast first.');return;}
+  var sizes={small:'clamp(1rem,2.5vw,1.6rem)',medium:'clamp(1.4rem,3.5vw,2.4rem)',large:'clamp(1.8rem,5vw,3.4rem)'};
+  el.style.fontSize=sizes[msgSize]||sizes.small;
+  el.style.color=msgColor;
+  el.textContent=txt;
+  overlay.style.display='flex';
+  showToast('Message on screen 📺');
+}
+function hideScreenMsg(){
+  var o=document.getElementById('screen-msg-overlay');
+  if(o)o.style.display='none';
+  showToast('Screen message cleared');
+}
+function quickMsg(txt){document.getElementById('screen-msg-input').value=txt;showScreenMsg();}
+
+/* ══════════════════════════
+   MID-SESSION ADVERT
+══════════════════════════ */
+function launchAdvert(){
+  var title=document.getElementById('advert-title').value.trim();
+  var body=document.getElementById('advert-body').value.trim();
+  var dur=parseInt(document.getElementById('advert-duration').value)||15;
+  if(!title){showToast('Enter an advert title.');return;}
+  document.getElementById('advert-title-display').textContent=title;
+  document.getElementById('advert-body-display').textContent=body;
+  var overlay=document.getElementById('advert-overlay');
+  if(!overlay){showToast('Start broadcast first.');return;}
+  overlay.style.display='flex';
+  var secs=dur;
+  document.getElementById('advert-secs').textContent=secs;
+  if(advertCountdown)clearInterval(advertCountdown);
+  advertCountdown=setInterval(function(){secs--;document.getElementById('advert-secs').textContent=secs;if(secs<=0){clearInterval(advertCountdown);closeAdvert();}},1000);
+  showToast('Advert playing 📢');
+}
+function closeAdvert(){
+  var o=document.getElementById('advert-overlay');
+  if(o)o.style.display='none';
+  if(advertCountdown){clearInterval(advertCountdown);advertCountdown=null;}
+  if(advertScheduleTimer){clearTimeout(advertScheduleTimer);advertScheduleTimer=null;}
+  var ss=document.getElementById('advert-schedule-status');
+  if(ss)ss.style.display='none';
+}
+function scheduleAdvert(){
+  var delay=parseInt(document.getElementById('advert-delay').value)||0;
+  if(delay<=0){showToast('Set a time greater than 0 minutes.');return;}
+  if(advertScheduleTimer)clearTimeout(advertScheduleTimer);
+  advertScheduleTimer=setTimeout(launchAdvert,delay*60000);
+  var s=document.getElementById('advert-schedule-status');
+  if(s){s.textContent='⏱ Advert scheduled in '+delay+' min.';s.style.display='block';}
+  showToast('Advert scheduled for '+delay+' min ⏱');
+}
+
+/* ══════════════════════════
+   GOSPEL MUSIC PLAYER
+══════════════════════════ */
+var tracks=[
+  {name:'Amazing Grace (Gospel)',artist:'Traditional',src:'',dur:'4:12'},
+  {name:'How Great Thou Art',artist:'Classic Hymn',src:'',dur:'3:55'},
+  {name:'Way Maker',artist:'Sinach',src:'',dur:'5:30'},
+  {name:'Oceans (Where Feet May Fail)',artist:'Hillsong',src:'',dur:'6:01'},
+  {name:'Open Heavens',artist:'Nathaniel Bassey',src:'',dur:'4:44'},
+  {name:'Goodness of God',artist:'CeCe Winans',src:'',dur:'4:33'},
+];
+var currentTrack=0,isPlaying=false,shuffleOn=false,repeatOn=false,audio=null,simInterval=null;
+function initPlayer(){
+  audio=document.getElementById('audio-player');
+  if(!audio)return;
+  audio.addEventListener('timeupdate',updateProgress);
+  audio.addEventListener('ended',onTrackEnd);
+  audio.volume=0.8;
+  renderPlaylist();loadTrack(0,false);
+}
+function renderPlaylist(){
+  var pl=document.getElementById('playlist');
+  if(!pl)return;
+  pl.innerHTML='';
+  tracks.forEach(function(t,i){
+    var div=document.createElement('div');
+    div.className='playlist-item'+(i===currentTrack?' playing':'');
+    div.onclick=function(){loadTrack(i,true);};
+    div.innerHTML='<span class="pl-num">'+(i+1)+'</span><span class="pl-icon">'+(i===currentTrack&&isPlaying?'▶':'🎵')+'</span><span class="pl-name">'+t.name+'</span><span class="pl-dur">'+t.dur+'</span>';
+    pl.appendChild(div);
+  });
+}
+function loadTrack(idx,autoPlay){
+  currentTrack=idx;
+  var t=tracks[idx];
+  var tn=document.getElementById('music-track-name');
+  var ta=document.getElementById('music-track-artist');
+  if(tn)tn.textContent=t.name.replace(/&amp;/g,'&');
+  if(ta)ta.textContent=t.artist;
+  var mf=document.getElementById('music-fill');
+  var mc=document.getElementById('music-cur');
+  var md=document.getElementById('music-dur');
+  if(mf)mf.style.width='0%';
+  if(mc)mc.textContent='0:00';
+  if(md)md.textContent=t.dur;
+  if(t.src&&audio){audio.src=t.src;if(autoPlay)audio.play().then(function(){setPlayState(true);}).catch(function(){});}
+  else if(autoPlay){simulatePlayback(t.dur);setPlayState(true);}
+  renderPlaylist();
+}
+function setPlayState(playing){
+  isPlaying=playing;
+  var pb=document.getElementById('music-play-btn');
+  var disc=document.getElementById('music-disc');
+  if(pb)pb.textContent=playing?'⏸':'▶';
+  if(disc)disc.classList.toggle('spinning',playing);
+}
+function simulatePlayback(durStr){
+  if(simInterval)clearInterval(simInterval);
+  var parts=durStr.split(':'),total=parseInt(parts[0])*60+parseInt(parts[1]),cur=0;
+  simInterval=setInterval(function(){
+    if(!isPlaying)return;
+    cur++;
+    var pct=Math.min((cur/total)*100,100);
+    var mf=document.getElementById('music-fill');var mc=document.getElementById('music-cur');
+    if(mf)mf.style.width=pct+'%';
+    if(mc)mc.textContent=Math.floor(cur/60)+':'+(cur%60<10?'0':'')+(cur%60);
+    if(cur>=total){clearInterval(simInterval);onTrackEnd();}
+  },1000);
+}
+function togglePlay(){
+  if(isPlaying){if(audio&&audio.src)audio.pause();if(simInterval)clearInterval(simInterval);setPlayState(false);}
+  else{var t=tracks[currentTrack];if(audio&&audio.src){audio.play().catch(function(){});setPlayState(true);}else{simulatePlayback(t.dur);setPlayState(true);}}
+}
+function nextTrack(){var idx=shuffleOn?Math.floor(Math.random()*tracks.length):(currentTrack+1)%tracks.length;loadTrack(idx,isPlaying);}
+function prevTrack(){var idx=(currentTrack-1+tracks.length)%tracks.length;loadTrack(idx,isPlaying);}
+function onTrackEnd(){if(repeatOn)loadTrack(currentTrack,true);else nextTrack();}
+function toggleShuffle(){shuffleOn=!shuffleOn;var b=document.getElementById('music-shuffle-btn');if(b)b.classList.toggle('active-music',shuffleOn);showToast(shuffleOn?'Shuffle on':'Shuffle off');}
+function toggleRepeat(){repeatOn=!repeatOn;var b=document.getElementById('music-repeat-btn');if(b)b.classList.toggle('active-music',repeatOn);showToast(repeatOn?'Repeat on':'Repeat off');}
+function setVolume(v){if(audio)audio.volume=v/100;}
+function updateProgress(){if(!audio||!audio.duration)return;var pct=(audio.currentTime/audio.duration)*100;var mf=document.getElementById('music-fill');if(mf)mf.style.width=pct+'%';var c=Math.floor(audio.currentTime);var mc=document.getElementById('music-cur');if(mc)mc.textContent=Math.floor(c/60)+':'+(c%60<10?'0':'')+(c%60);}
+function seekMusic(e){var bar=e.currentTarget,pct=e.offsetX/bar.offsetWidth;if(audio&&audio.duration)audio.currentTime=pct*audio.duration;var mf=document.getElementById('music-fill');if(mf)mf.style.width=(pct*100)+'%';}
+function addTracks(input){Array.from(input.files).forEach(function(file){var url=URL.createObjectURL(file),name=file.name.replace(/\.[^.]+$/,''),tmp=new Audio(url);tmp.addEventListener('loadedmetadata',function(){var d=Math.floor(tmp.duration);tracks.push({name:name,artist:'Your upload',src:url,dur:Math.floor(d/60)+':'+(d%60<10?'0':'')+(d%60)});renderPlaylist();showToast('Added: '+name);});});}
+function pauseMusicForLive(){if(isPlaying){togglePlay();showToast('Music paused — you are live 🔴');}}
+
+/* ══════════════════════════
+   CHAT
+══════════════════════════ */
+var autoMsgs=[
+  {name:'Amos M.',init:'AM',text:'Amen! Mentor V is on fire today 🙏'},
+  {name:'Grace N.',init:'GN',text:'Joining from Nairobi — God bless!'},
+  {name:'Ruth O.',init:'RO',text:'The link was so easy to open ✨'},
+  {name:'David K.',init:'DK',text:'Hallelujah! Praying for everyone 🔥'},
+  {name:'Mary W.',init:'MW',text:'God is faithful! Thank you Lightbearer V 🙌'},
+  {name:'John A.',init:'JA',text:'Joining from Mombasa — God bless!'},
+  {name:'Faith N.',init:'FN',text:'This word is exactly what I needed today'},
+  {name:'Peter M.',init:'PM',text:'Amen! Sharing this with my family now'},
+  {name:'Sarah L.',init:'SL',text:'First time here — so grateful ❤️'},
+  {name:'Moses K.',init:'MK',text:'The presence of God is here tonight 👑'},
+  {name:'Esther W.',init:'EW',text:'Praying along from Uganda 🙏'},
+  {name:'Isaac T.',init:'IT',text:'What a blessing this ministry is!'},
+];
+var chatIdx=0;
+function addChatMsg(name,init,text){
+  var box=document.getElementById('chat-msgs');if(!box)return;
+  var div=document.createElement('div');div.className='chat-msg-item';
+  div.innerHTML='<div class="chat-av">'+init+'</div><div><div class="chat-msg-name">'+name+'</div><div class="chat-msg-text">'+text+'</div></div>';
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
+  while(box.children.length>30)box.removeChild(box.firstChild);
+}
+autoMsgs.slice(0,3).forEach(function(m){addChatMsg(m.name,m.init,m.text);});
+setInterval(function(){var m=autoMsgs[chatIdx%autoMsgs.length];chatIdx++;addChatMsg(m.name,m.init,m.text);},4500);
+function sendChat(){
+  var inp=document.getElementById('chat-input'),val=inp.value.trim();if(!val)return;
+  addChatMsg('Mentor V','MV',val.replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+  inp.value='';showToast('Message sent to members 🙏');
+}
+
+/* ══════════════════════════
+   REACTIONS
+══════════════════════════ */
+function react(btn,emoji){
+  var cnt=btn.querySelector('.r-cnt');cnt.textContent=parseInt(cnt.textContent)+1;
+  btn.classList.remove('popped');void btn.offsetWidth;btn.classList.add('popped');
+  var r=btn.getBoundingClientRect(),el=document.createElement('div');
+  el.className='float-emoji';el.textContent=emoji;
+  el.style.left=(r.left+r.width/2-12)+'px';el.style.top=(r.top-10)+'px';
+  document.body.appendChild(el);setTimeout(function(){el.remove();},1600);
+}
+
+/* ══════════════════════════
+   TABS
+══════════════════════════ */
+function switchLiveTab(id,btn){
+  document.querySelectorAll('.live-tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.live-tab-panel').forEach(function(p){p.classList.remove('active');});
+  btn.classList.add('active');document.getElementById('ltab-'+id).classList.add('active');
+}
+function switchTab(btn,id){
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
+  btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active');
+}
+
+/* ══════════════════════════
+   PRAYER
+══════════════════════════ */
+function submitPrayer(){
+  var name=document.getElementById('p-name').value.trim(),text=document.getElementById('p-text').value.trim();
+  if(!name||!text){showToast('Please fill in your name and request.');return;}
+  document.getElementById('prayer-inner').style.display='none';
+  document.getElementById('prayer-ok').style.display='block';
+  showToast('Prayer submitted 🙏');
+}
+
+/* ══════════════════════════
+   EMAIL
+══════════════════════════ */
+var templates={
+  invite:{subject:'You are invited — Sunday Service with Lightbearer V Ministry',body:'Dear beloved,\n\nYou are warmly invited to join us this Sunday for our live service led by Mentor V.\n\nClick this link to join and hear the service live:\nhttps://meet.jit.si/'+roomName+'\n\nService starts at 10:00 AM. No app needed — just click the link.\n\nGod bless you,\nLightbearer V Ministry'},
+  prayer:{subject:'A special prayer call from Lightbearer V Ministry',body:'Dear friend,\n\nJoin us for prayer this Friday at 6:00 PM.\n\nJoin link: https://meet.jit.si/'+roomName+'\n\nGod is faithful.\n\nLightbearer V & Mentor V'},
+  encourage:{subject:'A word of encouragement from Lightbearer V',body:'Dear beloved,\n\n"For I know the plans I have for you," declares the LORD.  — Jeremiah 29:11\n\nYou are seen, loved, and destined for greatness.\n\nWith love,\nLightbearer V & Mentor V'},
+  zoom:{subject:'Live Service Link — Lightbearer V Ministry',body:'Dear congregation,\n\nJoin Mentor V live here:\nhttps://meet.jit.si/'+roomName+'\n\nNo app needed. Just click the link.\n\nGod bless,\nLightbearer V & Mentor V'}
+};
+function fillTemplate(key){var t=templates[key];document.getElementById('email-subject').value=t.subject;document.getElementById('email-body').value=t.body;showToast('Template loaded ✉️');}
+function sendEmail(){
+  var to=document.getElementById('email-to').value.trim(),subject=document.getElementById('email-subject').value.trim(),body=document.getElementById('email-body').value.trim();
+  if(!to){showToast('Enter recipient email.');return;}if(!subject){showToast('Enter subject.');return;}if(!body){showToast('Write your message.');return;}
+  window.location.href='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  showToast('Opening email app ✉️');
+}
+function clearEmail(){['email-to','email-subject','email-body'].forEach(function(id){document.getElementById(id).value='';});showToast('Cleared');}
+
+/* ══════════════════════════
+   CTA
+══════════════════════════ */
+function submitCTA(){
+  var email=document.getElementById('cta-email').value.trim();
+  if(!email||email.indexOf('@')<0){showToast('Enter a valid email.');return;}
+  document.querySelector('.invite-box').style.display='none';
+  document.getElementById('cta-ok').style.display='block';
+  showToast('Welcome to Lightbearer V Ministry! ✨');
+}
+
+/* ══════════════════════════
+   NAV
+══════════════════════════ */
+function toggleMenu(){document.getElementById('hamburger').classList.toggle('open');document.getElementById('mobile-menu').classList.toggle('open');}
+function closeMenu(){document.getElementById('hamburger').classList.remove('open');document.getElementById('mobile-menu').classList.remove('open');}
+window.addEventListener('scroll',function(){
+  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60);
+  var lb=document.getElementById('lang-bar');if(lb)lb.style.top=window.scrollY>60?'52px':'60px';
+  var secs=['features','schedule','how','prayer','email-section','testimonials','cta'],cur='';
+  secs.forEach(function(id){var el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-140)cur=id;});
+  document.querySelectorAll('.nav-links a').forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+cur);});
+});
+
+/* ══════════════════════════
+   SCROLL REVEAL
+══════════════════════════ */
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+
+/* ══════════════════════════
+   LANGUAGE TRANSLATION
+══════════════════════════ */
+var translations={en:{'ministry-name':'Lightbearer V Ministry','headline':'Empowerment of <span style="color:var(--gold)">Vision.</span><br>Destiny. Transformation.<br><span style="color:var(--gold)">Inspire &amp; Connect.</span>','lead':'Led by Lightbearer V &amp; Mentor V','sub':'The live platform for faith communities. Stream your Sunday sermon, host motivational talks, and invite anyone to join with a single link.','cta1':'Start your broadcast','cta2':'See live schedule','live-title':'Lightbearer V Ministry','live-sub':'Mentor V is Live 🔴','footer-logo':'Lightbearer V Ministry','footer-tag':'Vision · Destiny · Transformation · Inspire · Connect'},sw:{'ministry-name':'Huduma ya Lightbearer V','headline':'Nguvu ya <span style="color:var(--gold)">Maono.</span><br>Hatima. Mabadiliko.<br><span style="color:var(--gold)">Ilhamu &amp; Muunganiko.</span>','lead':'Ikiongozwa na Lightbearer V &amp; Mentor V','sub':'Jukwaa la moja kwa moja kwa jamii za imani.','cta1':'Anza utangazaji','cta2':'Ona ratiba','live-title':'Huduma ya Lightbearer V','live-sub':'Mentor V yuko moja kwa moja 🔴','footer-logo':'Huduma ya Lightbearer V','footer-tag':'Maono · Hatima · Mabadiliko · Ilhamu · Muunganiko'},fr:{'ministry-name':'Ministère Lightbearer V','headline':'Autonomisation de la <span style="color:var(--gold)">Vision.</span><br>Destinée. Transformation.<br><span style="color:var(--gold)">Inspirer &amp; Connecter.</span>','lead':'Dirigé par Lightbearer V &amp; Mentor V','sub':'La plateforme en direct pour les communautés de foi.','cta1':'Commencer la diffusion','cta2':'Voir le programme','live-title':'Ministère Lightbearer V','live-sub':'Mentor V est en direct 🔴','footer-logo':'Ministère Lightbearer V','footer-tag':'Vision · Destinée · Transformation · Inspirer · Connecter'},es:{'ministry-name':'Ministerio Lightbearer V','headline':'Empoderamiento de la <span style="color:var(--gold)">Visión.</span><br>Destino. Transformación.<br><span style="color:var(--gold)">Inspirar &amp; Conectar.</span>','lead':'Dirigido por Lightbearer V &amp; Mentor V','sub':'La plataforma en vivo para comunidades de fe.','cta1':'Iniciar transmisión','cta2':'Ver horario','live-title':'Ministerio Lightbearer V','live-sub':'Mentor V está en vivo 🔴','footer-logo':'Ministerio Lightbearer V','footer-tag':'Visión · Destino · Transformación · Inspirar · Conectar'}};
+function setLang(code,btn){
+  var t=translations[code];if(!t)return;
+  document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.remove('active-lang');});btn.classList.add('active-lang');
+  ['ministry-name','lead','sub','cta1','cta2','live-title','live-sub','footer-logo','footer-tag'].forEach(function(id){var el=document.getElementById('t-'+id);if(el&&t[id])el.innerHTML=t[id];});
+  var h=document.getElementById('t-headline');if(h&&t.headline)h.innerHTML=t.headline;
+  document.body.style.direction=(code==='ar')?'rtl':'ltr';
+  showToast('Language: '+btn.textContent);
+}
+
+/* ══════════════════════════
+   TOAST
+══════════════════════════ */
+var toastTmr;
+function showToast(msg){
+  clearTimeout(toastTmr);
+  document.getElementById('toast-msg').textContent=msg;
+  var t=document.getElementById('toast');t.classList.add('show');
+  toastTmr=setTimeout(function(){t.classList.remove('show');},3200);
+}
+
+/* ══════════════════════════
+   INIT
+══════════════════════════ */
+window.addEventListener('DOMContentLoaded',function(){
+  initPlayer();
+});
+</script>
+</body>
+</html>
